@@ -12,21 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo: required
-# trusty required for docker
-# https://github.com/travis-ci/travis-ci/issues/5448
-dist: trusty
-go:
-- 1.8
-services:
-- docker
-install:
-- mkdir -p ${GOPATH}/src/k8s.io
-- ln -s `pwd` ${GOPATH}/src/k8s.io/dns
-script:
-- make build -f Makefile.wise2c
-- make test -f Makefile.wise2c
-- make all-containers -f Makefile.wise2c
-- bash test/e2e/sidecar/e2e.sh
-- sudo -v
-- cd ${GOPATH}/src/k8s.io/dns && bin/amd64/ginkgo test/e2e
+FROM alpine
+
+MAINTAINER Bowei Du <bowei@google.com>
+
+ADD bin/kube-dns /kube-dns
+ENTRYPOINT ["/kube-dns"]

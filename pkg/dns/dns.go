@@ -339,7 +339,10 @@ func (kd *KubeDNS) removeService(obj interface{}) {
 			delete(kd.reverseRecordMap, s.Spec.ClusterIP)
 			delete(kd.clusterIPServiceMap, s.Spec.ClusterIP)
 		}
+		//add by wise2c: delete stack originated dns records
+		kd.removeWise2cService(s)
 	}
+
 }
 
 func (kd *KubeDNS) updateService(oldObj, newObj interface{}) {
@@ -522,6 +525,8 @@ func (kd *KubeDNS) newPortalService(service *v1.Service) {
 	kd.cache.SetSubCache(service.Name, subCache, subCachePath...)
 	kd.reverseRecordMap[service.Spec.ClusterIP] = reverseRecord
 	kd.clusterIPServiceMap[service.Spec.ClusterIP] = service
+	//add by wise2c for new stack originated dns records
+	kd.newWise2cPortalService(service)
 }
 
 func (kd *KubeDNS) generateRecordsForHeadlessService(e *v1.Endpoints, svc *v1.Service) error {
@@ -563,6 +568,8 @@ func (kd *KubeDNS) generateRecordsForHeadlessService(e *v1.Endpoints, svc *v1.Se
 		kd.reverseRecordMap[endpointIP] = reverseRecord
 	}
 	kd.cache.SetSubCache(svc.Name, subCache, subCachePath...)
+	//add by wise2c for new stack originated dns records
+	kd.wise2cRecordsForHeadlessService(e,svc)
 	return nil
 }
 
@@ -621,6 +628,9 @@ func (kd *KubeDNS) newExternalNameService(service *v1.Service) {
 	defer kd.cacheLock.Unlock()
 	// Store the service name directly as the leaf key
 	kd.cache.SetEntry(service.Name, recordValue, fqdn, cachePath...)
+	//add by wise2c for new stack originated dns records
+	kd.newWise2cExternalNameService(service)
+
 }
 
 // HasSynced returns true if the initial sync of services and endpoints
