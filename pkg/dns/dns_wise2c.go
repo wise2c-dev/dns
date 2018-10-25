@@ -16,7 +16,6 @@ limitations under the License.
 package dns
 
 import (
-
 	"strings"
 
 	"k8s.io/client-go/pkg/api/v1"
@@ -25,7 +24,6 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/miekg/dns"
-
 )
 
 const (
@@ -34,22 +32,20 @@ const (
 
 	// A subdomain added to the user specified domain for all pods.
 	wise2cStackLabel = "io.wise2c.stack"
-
-
 )
 
-func getWise2cLabel( svc *v1.Service) ([]string, bool) {
-	wise2cSVC,ok := svc.Labels[wise2cServiceLabel]
+func getWise2cLabel(svc *v1.Service) ([]string, bool) {
+	wise2cSVC, ok := svc.Labels[wise2cServiceLabel]
 	if !ok {
-		return nil,ok
+		return nil, ok
 	}
 
-	wise2cStack,ok := svc.Labels[wise2cStackLabel]
+	wise2cStack, ok := svc.Labels[wise2cStackLabel]
 	if !ok {
-		return nil,ok
+		return nil, ok
 
 	}
-	return []string{wise2cStack,wise2cSVC}, ok
+	return []string{wise2cStack, wise2cSVC}, ok
 }
 
 //wise2c fqdn pattern: domain.svc.ns.stack.servicename
@@ -60,11 +56,11 @@ func (kd *KubeDNS) wise2cfqdn(service *v1.Service, subpaths ...string) string {
 
 func (kd *KubeDNS) wise2cRecordsForHeadlessService(e *v1.Endpoints, svc *v1.Service) error {
 	//get wise2c labels:  wise2cLabels[0] - stack name; [1] - service name
-	wise2cLabels,ok := getWise2cLabel(svc)
+	wise2cLabels, ok := getWise2cLabel(svc)
 	if !ok {
-         return nil
+		return nil
 	}
-	subCachePath := append(kd.domainPath, serviceSubdomain, svc.Namespace,wise2cLabels[0])
+	subCachePath := append(kd.domainPath, serviceSubdomain, svc.Namespace, wise2cLabels[0])
 
 	subCache := treecache.NewTreeCache()
 	//glog.V(4).Infof("Endpoints Annotations: %v", e.Annotations)
@@ -80,16 +76,16 @@ func (kd *KubeDNS) wise2cRecordsForHeadlessService(e *v1.Endpoints, svc *v1.Serv
 			subCache.SetEntry(endpointName, recordValue, kd.wise2cfqdn(svc, append(wise2cLabels, endpointName)...))
 			//for wrise2c headless service, we don't genterate A records for named port
 			/*
-			for portIdx := range e.Subsets[idx].Ports {
-				endpointPort := &e.Subsets[idx].Ports[portIdx]
-				if endpointPort.Name != "" && endpointPort.Protocol != "" {
-					srvValue := kd.generateSRVRecordValue(svc, int(endpointPort.Port), endpointName)
-					glog.V(2).Infof("Added SRV record %+v", srvValue)
+				for portIdx := range e.Subsets[idx].Ports {
+					endpointPort := &e.Subsets[idx].Ports[portIdx]
+					if endpointPort.Name != "" && endpointPort.Protocol != "" {
+						srvValue := kd.generateSRVRecordValue(svc, int(endpointPort.Port), endpointName)
+						glog.V(2).Infof("Added SRV record %+v", srvValue)
 
-					l := []string{"_" + strings.ToLower(string(endpointPort.Protocol)), "_" + endpointPort.Name}
-					subCache.SetEntry(endpointName, srvValue, kd.fqdn(svc, append(l, endpointName)...), l...)
-				}
-			} */
+						l := []string{"_" + strings.ToLower(string(endpointPort.Protocol)), "_" + endpointPort.Name}
+						subCache.SetEntry(endpointName, srvValue, kd.fqdn(svc, append(l, endpointName)...), l...)
+					}
+				} */
 
 		}
 	}
@@ -101,7 +97,7 @@ func (kd *KubeDNS) wise2cRecordsForHeadlessService(e *v1.Endpoints, svc *v1.Serv
 
 func (kd *KubeDNS) newWise2cPortalService(service *v1.Service) {
 	//get wise2c labels:  wise2cLabels[0] - stack name; [1] - service name
-	wise2cLabels,ok := getWise2cLabel(service)
+	wise2cLabels, ok := getWise2cLabel(service)
 	if !ok {
 		return
 	}
@@ -122,7 +118,7 @@ func (kd *KubeDNS) newWise2cPortalService(service *v1.Service) {
 			subCache.SetEntry(recordLabel, srvValue, kd.fqdn(service, append(l, recordLabel)...), l...)
 		}
 	}
-	subCachePath := append(kd.domainPath, serviceSubdomain, service.Namespace,wise2cLabels[0])
+	subCachePath := append(kd.domainPath, serviceSubdomain, service.Namespace, wise2cLabels[0])
 	//kd.cacheLock.Lock()
 	//defer kd.cacheLock.Unlock()
 	kd.cache.SetSubCache(wise2cLabels[1], subCache, subCachePath...)
@@ -130,7 +126,7 @@ func (kd *KubeDNS) newWise2cPortalService(service *v1.Service) {
 
 func (kd *KubeDNS) newWise2cExternalNameService(service *v1.Service) {
 	//get wise2c labels:  wise2cLabels[0] - stack name; [1] - service name
-	wise2cLabels,ok := getWise2cLabel(service)
+	wise2cLabels, ok := getWise2cLabel(service)
 	if !ok {
 		return
 	}
@@ -138,7 +134,7 @@ func (kd *KubeDNS) newWise2cExternalNameService(service *v1.Service) {
 	// Create a CNAME record for the service's ExternalName.
 	recordValue, _ := util.GetSkyMsg(service.Spec.ExternalName, 0)
 	cachePath := append(kd.domainPath, serviceSubdomain, service.Namespace, wise2cLabels[0])
-	fqdn := kd.wise2cfqdn(service,wise2cLabels[0])
+	fqdn := kd.wise2cfqdn(service, wise2cLabels[0])
 	glog.V(2).Infof("newExternalNameService: storing key %s with value %v as %s under %v",
 		service.Name, recordValue, fqdn, cachePath)
 	//kd.cacheLock.Lock()
@@ -147,9 +143,9 @@ func (kd *KubeDNS) newWise2cExternalNameService(service *v1.Service) {
 	kd.cache.SetEntry(wise2cLabels[1], recordValue, fqdn, cachePath...)
 }
 
-func (kd *KubeDNS) removeWise2cService(svc *v1.Service) (bool) {
+func (kd *KubeDNS) removeWise2cService(svc *v1.Service) bool {
 	//get wise2c labels:  wise2cLabels[0] - stack name; [1] - service name
-	wise2cLabels,ok := getWise2cLabel(svc)
+	wise2cLabels, ok := getWise2cLabel(svc)
 	if !ok {
 		return true
 	}
@@ -157,5 +153,5 @@ func (kd *KubeDNS) removeWise2cService(svc *v1.Service) (bool) {
 	success := kd.cache.DeletePath(subCachePath...)
 	glog.V(2).Infof("removeService %v at path %v. Success: %v",
 		svc.Name, subCachePath, success)
-	return success;
+	return success
 }

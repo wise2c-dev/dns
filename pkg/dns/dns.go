@@ -569,7 +569,7 @@ func (kd *KubeDNS) generateRecordsForHeadlessService(e *v1.Endpoints, svc *v1.Se
 	}
 	kd.cache.SetSubCache(svc.Name, subCache, subCachePath...)
 	//add by wise2c for new stack originated dns records
-	kd.wise2cRecordsForHeadlessService(e,svc)
+	kd.wise2cRecordsForHeadlessService(e, svc)
 	return nil
 }
 
