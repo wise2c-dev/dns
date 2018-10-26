@@ -27,7 +27,8 @@ export VERSION
 # directories which hold app source (not vendored)
 SRC_DIRS := cmd pkg
 
-ALL_ARCH := amd64 arm arm64 ppc64le s390x
+#ALL_ARCH := amd64 arm arm64 ppc64le s390x
+ALL_ARCH := amd64
 NOBODY ?= nobody
 # Set default base image dynamically for each arch
 ifeq ($(ARCH),amd64)
@@ -156,7 +157,7 @@ push: $(PUSH_BUILDSTAMPS) images-push
 
 .%-push: .%-container
 	@echo "pushing  :" $$(head -n 1 $<)
-ifeq (,$(findstring gcr.io,$(REGISTRY)))
+ifeq (,$(findstring wisecloud,$(REGISTRY)))
 	@docker push $$(head -n 1 $<) $(VERBOSE_OUTPUT)
 else
 	@gcloud docker -- push $$(head -n 1 $<) $(VERBOSE_OUTPUT)
