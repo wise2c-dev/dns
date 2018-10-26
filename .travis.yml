@@ -30,3 +30,6 @@ script:
 - bash test/e2e/sidecar/e2e.sh
 - sudo -v
 - cd ${GOPATH}/src/k8s.io/dns && bin/amd64/ginkgo test/e2e
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+- docker tag  wisecloud/k8s-dns-kube-dns-amd64:latest wisecloud/k8s-dns-kube-dns-amd64:v1.14.10.1
+- docker push wisecloud/k8s-dns-kube-dns-amd64:v1.14.10.1
