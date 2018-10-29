@@ -157,7 +157,7 @@ push: $(PUSH_BUILDSTAMPS) images-push
 
 .%-push: .%-container
 	@echo "pushing  :" $$(head -n 1 $<)
-ifeq (,$(findstring wisecloud,$(REGISTRY)))
+ifeq ($(findstring wisecloud,$(REGISTRY)), wisecloud)
 	@docker push $$(head -n 1 $<) $(VERBOSE_OUTPUT)
 else
 	@gcloud docker -- push $$(head -n 1 $<) $(VERBOSE_OUTPUT)
