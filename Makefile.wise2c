@@ -44,7 +44,8 @@ BUILD_IMAGE ?= golang:1.9.3-alpine
 CONTAINER_PREFIX ?= k8s-dns
 
 # This version-strategy uses git tags to set the version string
-VERSION ?= $(shell git describe --tags --always --dirty)
+#VERSION ?= $(shell git describe --tags --always --dirty)
+VERSION ?= 1.14.10.1
 
 # Set to 1 to print more verbose output from the build.
 VERBOSE ?= 0
